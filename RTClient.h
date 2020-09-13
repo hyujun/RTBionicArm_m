@@ -38,7 +38,6 @@
 #include "EcatDataSocket.h"
 #include "EcatControlSocket.h"
 
-#include "EcatSystem/RTControlSocket.h"
 #include "EcatSystem/Ecat_Master.h"
 #include "EcatSystem/Ecat_Elmo.h"
 #include "EcatSystem/Ecat_KistFinger.h"
@@ -59,7 +58,7 @@
 #define _DEBUG_ 			/**<Debug Print Parameter*/
 #define _ECAT_ON_ 			/**<EtherCAT device enable Parameter*/
 #define _USE_DC_MODE_		/**<EtherCAT Distributed Clock mode enable Parameter*/
-#define _CAN_ON_
+//#define _CAN_ON_
 //#define _TCP_ON_
 #define _RS232_ON_
 //#define _PLOT_ON_

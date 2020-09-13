@@ -64,6 +64,9 @@ RT_TASK devmouse_task;
 RT_QUEUE msg_can;
 RT_QUEUE msg_plot;
 RT_QUEUE msg_tcpip;
+
+static void signal_handler(int sig);
+
 /****************************************************************************/
 // For RT thread management
 unsigned long fault_count=0;
@@ -373,6 +376,11 @@ void RTRArm_run(void *arg)
 			if(reset_counter == 0)
 			{
 				double_gt = 0;
+			}
+
+			if(ecatmaster.GetConnectedSlaves() < ELMO_TOTAL)
+			{
+				exit(EXIT_SUCCESS);
 			}
 
 			system_ready = 0;
@@ -812,6 +820,13 @@ int main(int argc, char **argv)
 #endif
 
 #if defined(_ECAT_ON_)
+
+	if(ecatmaster.GetConnectedSlaves() < ELMO_TOTAL)
+	{
+		rt_printf("\nError: Check Ethercat slave connection!\n");
+		return 1;
+	}
+
 	for(int SlaveNum=0; SlaveNum < ELMO_TOTAL; SlaveNum++)
 	{
 		ecat_elmo[SlaveNum].setHomingParam(hominginfo[SlaveNum].HomingOffset, hominginfo[SlaveNum].HomingMethod,
