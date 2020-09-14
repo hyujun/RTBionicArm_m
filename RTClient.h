@@ -25,7 +25,7 @@
 #include <sys/ioctl.h>
 #include <math.h>
 
-#include "NRMKsercan_tp.h"  //<Header for the SERCAN API
+//#include "NRMKsercan_tp.h"  //<Header for the SERCAN API
 #include "NRMKhw_tp.h"		//<Header for the SERCAN API
 //-xenomai-///////////////////////////////////////////////////////////////
 #include <native/task.h>
@@ -35,8 +35,6 @@
 #include <rtdk.h>		//The rdtk real-time printing library
 /****************************************************************************/
 
-#include "EcatDataSocket.h"
-#include "EcatControlSocket.h"
 
 #include "EcatSystem/Ecat_Master.h"
 #include "EcatSystem/Ecat_Elmo.h"

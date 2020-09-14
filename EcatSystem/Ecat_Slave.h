@@ -97,7 +97,7 @@ public:
 	/**
 	 * @brief base member for PDO domain
 	 */
-	typedef std::map<unsigned int, std::vector<unsigned int>> DomainMap;
+	typedef std::map< int, std::vector<int> > DomainMap;
 
 	/**
 	 * @brief base method for pdo domains
@@ -145,15 +145,15 @@ public:
 
 protected:
 
-	int slave_alias=0; /**<slave alias from slave configuration */
-	int slave_position=0; /**<slave position from slave configuration  */
+	int slave_alias; /**<slave alias from slave configuration */
+	int slave_position; /**<slave position from slave configuration  */
 
     bool homing_flag_ = false;
 
-    int32_t mHomingOffset=0;
-    int8_t mHomingMethod=0;
-    uint32_t mHomingSpeed=0;
-    uint16_t mHomingCurrentLimit=0;
+    int32_t mHomingOffset;
+    int8_t mHomingMethod;
+    uint32_t mHomingSpeed;
+    uint16_t mHomingCurrentLimit;
 };
 
 }

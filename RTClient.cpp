@@ -29,7 +29,6 @@ struct LOGGING_PACK
 };
 
 // NRMKDataSocket for plotting axes data in Data Scope
-EcatDataSocket datasocket;
 devMouseObject dMouse;
 /****************************************************************************/
 // When all slaves or drives reach OP mode,
@@ -262,8 +261,8 @@ void RTRArm_run(void *arg)
 
 			if(HomingFlag == 0)
 			{
-				isElmoHoming();
-				//HomingFlag = 1;
+				//isElmoHoming();
+				//mingFlag = 1;
 			}
 			else
 			{
@@ -294,7 +293,7 @@ void RTRArm_run(void *arg)
 						}
 						else
 						{
-							ecat_elmo[j].writeTorque(TargetTor[j]);
+							//ecat_elmo[j].writeTorque(TargetTor[j]);
 						}
 
 					}
@@ -674,10 +673,6 @@ void plot_run(void *arg)
 		{
 			memcpy(&logBuff, msg, sizeof(LOGGING_PACK));
 
-			datasocket.updateControlData( logBuff.ActualPos, logBuff.DesiredPos, logBuff.ActualVel,
-											logBuff.DesiredVel, logBuff.ActualToq, logBuff.DesiredToq );
-			datasocket.update( logBuff.Time );
-
 			rt_queue_free(&msg_plot, msg);
 		}
 	}
@@ -685,15 +680,6 @@ void plot_run(void *arg)
 
 void tcpip_run(void *arg)
 {
-	auto tcp_port = "4676";
-	char buffer[256] = {0};
-	char szSendMessage[256] = {0};
-	int tcp_flag=0;
-	Poco::Net::SocketAddress server_addr(tcp_port);
-	Poco::Net::ServerSocket server_sock(server_addr);
-
-	Poco::Net::Socket::SocketList connectedSockList;
-	connectedSockList.push_back(server_sock);
 
 	rt_task_set_periodic(NULL, TM_NOW, 1e6);
 
@@ -824,7 +810,7 @@ int main(int argc, char **argv)
 	if(ecatmaster.GetConnectedSlaves() < ELMO_TOTAL)
 	{
 		rt_printf("\nError: Check Ethercat slave connection!\n");
-		return 1;
+		//return 1;
 	}
 
 	for(int SlaveNum=0; SlaveNum < ELMO_TOTAL; SlaveNum++)
@@ -840,18 +826,6 @@ int main(int argc, char **argv)
 	ecatmaster.activate();
 #endif
 
-#endif
-
-#if defined(_PLOT_ON_)
-	rt_printf("\n-- TCP(Plot) Configuration");
-	// TO DO: Create data socket server
-	datasocket.setPeriod(period);
-
-	if (datasocket.startServer(SOCK_TCP, NRMK_PORT_DATA))
-		rt_printf("\n-- Data server started at IP of : %s on Port: %d", datasocket.getAddress(), NRMK_PORT_DATA);
-
-	rt_printf("\n-- Waiting for Data Scope to connect...\n");
-	datasocket.waitForConnection(0);
 #endif
 
 	// RTArm_task: create and start
