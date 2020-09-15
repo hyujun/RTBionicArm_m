@@ -10,7 +10,6 @@ cmake_minimum_required(VERSION 2.8)
 #   * PROJECT_VERSION
 project(RTBionicArm_m)
 
-
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -22,27 +21,44 @@ include(${PROJECT_SOURCE_DIR}/modules/CMakeFunctions.cmake)
 
 cmake_policy(SET CMP0022 NEW)
 
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3" )
 message(STATUS "C++${CMAKE_CXX_STANDARD} support has been enabled by default.")
 set(CMAKE_MODULE_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
-#add_subdirectory(Control)
-#add_subdirectory(EcatSystem)
-#add_subdirectory(KDL)
-#add_subdirectory(Network)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
-set(LIB_CONTROL ${CMAKE_CURRENT_SOURCE_DIR}/Control)
-set(LIB_ECAT ${CMAKE_CURRENT_SOURCE_DIR}/EcatSystem)
-set(LIB_KDL ${CMAKE_CURRENT_SOURCE_DIR}/KDL)
-set(LIB_NETWORK ${CMAKE_CURRENT_SOURCE_DIR}/Network)
+set(PROJ_INSTALL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/bin/inc)
+set(PROJ_INSTALL_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
+set(PROJ_INSTALL_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 
+set(CTRL_HEADERS_DIR ${PROJECT_SOURCE_DIR}/Control)
+set(ECAT_HEADERS_DIR ${PROJECT_SOURCE_DIR}/EcatSystem)
+set(KDL_HEADERS_DIR ${PROJECT_SOURCE_DIR}/KDL)
+set(NET_HEADERS_DIR ${PROJECT_SOURCE_DIR}/Network)
+
+include_directories(${PROJ_INSTALL_INCLUDE_DIR})
 include_directories(
-       ${LIB_CONTROL} ${LIB_ECAT} ${LIB_KDL} ${LIB_NETWORK}
+        ${CTRL_HEADERS_DIR}
+        ${ECAT_HEADERS_DIR}
+        ${KDL_HEADERS_DIR}
+        ${NET_HEADERS_DIR}
 )
 
-add_executable(${PROJECT_NAME} RTClient.cpp)
+add_subdirectory(Control)
+add_subdirectory(EcatSystem)
+add_subdirectory(KDL)
+add_subdirectory(Network)
+
+add_executable(${PROJECT_NAME} RTClient.cpp
+        devMouseObject.cpp)
+target_link_libraries(${PROJECT_NAME}
+        sub::CTRL
+        sub::ECAT
+        sub::KDL
+        sub::NETWORK
+        )
 
 #find_package(Eigen3 CONFIG)
 set( EIGEN3_INCLUDE_DIR /usr/include/eigen3)
@@ -80,13 +96,21 @@ if(Etherlab_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${Etherlab_LIBRARIES})
 endif(Etherlab_FOUND)
 
-find_package(NRMKHW)
+find_package(NRMKHW REQUIRED)
 if(NRMKHW_FOUND)
     message(STATUS "NRMKHW_INC_DIRS = ${NRMKHW_INCLUDE_DIR}")
     message(STATUS "NRMKHW_LIB_DIRS = ${NRMKHW_LIBRARIES}")
     include_directories(${NRMKHW_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} PUBLIC ${NRMKHW_LIBRARIES})
 endif(NRMKHW_FOUND)
+
+find_package(NRMKhelper REQUIRED)
+if(NRMKhelper_FOUND)
+    message(STATUS "NRMKhelper_INC_DIRS = ${NRMKhelper_INCLUDE_DIR}")
+    message(STATUS "NRMKhelper_LIB_DIRS = ${NRMKhelper_LIBRARIES}")
+    include_directories(${NRMKhelper_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${NRMKhelper_LIBRARIES})
+endif(NRMKhelper_FOUND)
 
 find_package(Poco REQUIRED COMPONENTS Foundation Util Net)
 if (Poco_FOUND)

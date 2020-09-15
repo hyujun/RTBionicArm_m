@@ -419,11 +419,11 @@ void serial_task_proc(void *arg)
 			//write
 			if(NRMKkbhit())
 			{
-				write(serial_fd, &kchr, 1);
+				//write(serial_fd, &kchr, 1);
 			}
 
 			//read
-			nbytes = read(serial_fd, &chr, 1);
+			//nbytes = read(serial_fd, &chr, 1);
 			if(nbytes > 0)
 			{
 				if(kchr == 'a' && chr == 'f')
@@ -865,7 +865,7 @@ int main(int argc, char **argv)
 	pause();
 
 	// Finalize
-	signal_handler(SIGTERM);
+	signal_handler(SIGINT);
 
     return 0;
 }

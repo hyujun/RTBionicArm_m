@@ -7,7 +7,7 @@
 #ifndef ECATSYSTEM_ECAT_MASTER_H_
 #define ECATSYSTEM_ECAT_MASTER_H_
 
-#include "ecrt.h"
+#include <ecrt.h>
 #include <string>
 #include <vector>
 #include <map>
