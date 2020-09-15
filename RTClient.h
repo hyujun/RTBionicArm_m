@@ -25,7 +25,7 @@
 #include <sys/ioctl.h>
 #include <math.h>
 
-//#include "NRMKsercan_tp.h"  //<Header for the SERCAN API
+#include "NRMKsercan_tp.h"  //<Header for the SERCAN API
 #include "NRMKhw_tp.h"		//<Header for the SERCAN API
 //-xenomai-///////////////////////////////////////////////////////////////
 #include <native/task.h>

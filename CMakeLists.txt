@@ -25,8 +25,22 @@ cmake_policy(SET CMP0022 NEW)
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-message(STATUS "C++14 support has been enabled by default.")
+message(STATUS "C++${CMAKE_CXX_STANDARD} support has been enabled by default.")
 set(CMAKE_MODULE_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/modules)
+
+#add_subdirectory(Control)
+#add_subdirectory(EcatSystem)
+#add_subdirectory(KDL)
+#add_subdirectory(Network)
+
+set(LIB_CONTROL ${CMAKE_CURRENT_SOURCE_DIR}/Control)
+set(LIB_ECAT ${CMAKE_CURRENT_SOURCE_DIR}/EcatSystem)
+set(LIB_KDL ${CMAKE_CURRENT_SOURCE_DIR}/KDL)
+set(LIB_NETWORK ${CMAKE_CURRENT_SOURCE_DIR}/Network)
+
+include_directories(
+       ${LIB_CONTROL} ${LIB_ECAT} ${LIB_KDL} ${LIB_NETWORK}
+)
 
 add_executable(${PROJECT_NAME} RTClient.cpp)
 

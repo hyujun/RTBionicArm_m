@@ -8,7 +8,7 @@
 #define ECATSYSTEM_ECAT_ELMO_H_
 
 #include "Ecat_Slave.h"
-#include "PDOConfig.h"
+
 //#define _ELMO_DEBUG_
 
 namespace hyuEcat{

@@ -13,6 +13,9 @@
 #include <vector>
 #include <iostream>
 
+
+#include "PDOConfig.h"
+
 namespace hyuEcat{
 /**
  * @brief EtherCAT base class for each specific client i.e., ELMO, MAXON..
@@ -97,7 +100,7 @@ public:
 	/**
 	 * @brief base member for PDO domain
 	 */
-	typedef std::map< int, std::vector<int> > DomainMap;
+	typedef std::map< unsigned int, std::vector<unsigned int> > DomainMap;
 
 	/**
 	 * @brief base method for pdo domains
