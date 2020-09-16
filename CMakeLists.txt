@@ -23,7 +23,7 @@ cmake_policy(SET CMP0022 NEW)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CMAKE_CXX_STANDARD} -O3" )
 message(STATUS "C++${CMAKE_CXX_STANDARD} support has been enabled by default.")
 set(CMAKE_MODULE_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
@@ -38,6 +38,10 @@ set(ECAT_HEADERS_DIR ${PROJECT_SOURCE_DIR}/EcatSystem)
 set(KDL_HEADERS_DIR ${PROJECT_SOURCE_DIR}/KDL)
 set(NET_HEADERS_DIR ${PROJECT_SOURCE_DIR}/Network)
 
+#include_directories(/usr/include)
+#include_directories(/usr/include/linux)
+#include_directories(/usr/include/c++/4.8.4)
+
 include_directories(${PROJ_INSTALL_INCLUDE_DIR})
 include_directories(
         ${CTRL_HEADERS_DIR}
@@ -51,14 +55,16 @@ add_subdirectory(EcatSystem)
 add_subdirectory(KDL)
 add_subdirectory(Network)
 
-add_executable(${PROJECT_NAME} RTClient.cpp
-        devMouseObject.cpp)
+add_executable(${PROJECT_NAME}
+        RTClient.cpp
+        devMouseObject.cpp
+)
 target_link_libraries(${PROJECT_NAME}
         sub::CTRL
         sub::ECAT
         sub::KDL
         sub::NETWORK
-        )
+)
 
 #find_package(Eigen3 CONFIG)
 set( EIGEN3_INCLUDE_DIR /usr/include/eigen3)

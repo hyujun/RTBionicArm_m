@@ -3,7 +3,7 @@ project(Network)
 
 set(SOURCE_FILES SocketHandler.h)
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} SHARED STATIC
         ${SOURCE_FILES}
         )
 add_library(sub::NETWORK ALIAS ${PROJECT_NAME})

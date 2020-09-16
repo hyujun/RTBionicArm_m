@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(EcatSystem)
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} SHARED STATIC
         Ecat_Master.cpp
         PDOConfig.c)
 add_library(sub::ECAT ALIAS ${PROJECT_NAME})
