@@ -3,7 +3,8 @@ project(EcatSystem)
 
 add_library(${PROJECT_NAME} SHARED STATIC
         Ecat_Master.cpp
-        PDOConfig.c)
+        PDOConfig.c
+        )
 add_library(sub::ECAT ALIAS ${PROJECT_NAME})
 
 target_include_directories( ${PROJECT_NAME}

@@ -35,20 +35,12 @@
 #include <rtdk.h>		//The rdtk real-time printing library
 /****************************************************************************/
 
-
 #include "EcatSystem/Ecat_Master.h"
 #include "EcatSystem/Ecat_Elmo.h"
-#include "EcatSystem/Ecat_KistFinger.h"
-#include "EcatSystem/Ecat_KistSensor.h"
 #include "Control/Controller.h"
 #include "Control/Motion.h"
 #include "Control/Trajectory.h"
 #include "KDL/SerialManipulator.h"
-#include "Control/KistHand.h"
-#include "devMouseObject.h"
-
-#include "Poco/Net/ServerSocket.h"
-#include "Poco/Net/SocketAddress.h"
 
 #define WAKEUP_TIME				(5)				/**<Initial waiting time*/
 #define NSEC_PER_SEC 			1000000000		/**<Expression of second in nano second*/
@@ -59,8 +51,6 @@
 //#define _CAN_ON_
 //#define _TCP_ON_
 #define _RS232_ON_
-//#define _PLOT_ON_
-//#define _DEV_MOUSE_ON_
 
 typedef unsigned int UINT32;	/**<typedef uint32_t*/
 typedef int64_t		INT64;		/**<typedef uint64_t*/

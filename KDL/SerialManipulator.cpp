@@ -19,6 +19,7 @@ SerialManipulator::SerialManipulator()
 	pCoMKin = new HYUMotionKinematics::PoEKinematics(mChainMat);
 	pDyn = new HYUMotionDynamics::Liedynamics(mChainMat, *pKin, *pCoMKin);
 
+	//Eigen::initParallel();
 }
 
 SerialManipulator::~SerialManipulator()

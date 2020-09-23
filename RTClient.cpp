@@ -29,7 +29,6 @@ struct LOGGING_PACK
 };
 
 // NRMKDataSocket for plotting axes data in Data Scope
-devMouseObject dMouse;
 /****************************************************************************/
 // When all slaves or drives reach OP mode,
 // system_ready becomes 1.
@@ -53,12 +52,10 @@ INT32 	TargetVel[BIONIC_ARM_DOF] = {0, };
 // Xenomai RT tasks
 RT_TASK RTArm_task;
 RT_TASK print_task;
-RT_TASK plot_task;
 RT_TASK tcpip_task;
 RT_TASK serial_task;
 RT_TASK can_task;
 RT_TASK can_rev_task;
-RT_TASK devmouse_task;
 
 RT_QUEUE msg_can;
 RT_QUEUE msg_plot;
@@ -194,6 +191,7 @@ Vector3d ForwardAxis[2];
 double TaskCondNumber[2];
 double OrientCondNumber[2];
 int NumChain;
+int MotionType = 0;
 
 // RTArm_task
 void RTRArm_run(void *arg)
@@ -273,7 +271,10 @@ void RTRArm_run(void *arg)
 				BionicArm.pKin->GetForwardKinematics( ForwardPos, ForwardOri, NumChain );
 
 				//BionicArm.StateMachine( ActualPos_Rad, ActualVel_Rad, finPos, JointState, ControlMotion );
-				motion.JointMotion( TargetPos_Rad, TargetVel_Rad, TargetAcc_Rad, finPos, ActualPos_Rad, ActualVel_Rad, double_gt, JointState, ControlMotion );
+				MotionType = motion.JointMotion( TargetPos_Rad, TargetVel_Rad,
+						TargetAcc_Rad, finPos, ActualPos_Rad,
+						ActualVel_Rad, double_gt,
+						JointState, ControlMotion );
 
 				//Control.PDController( ActualPos_Rad, ActualVel_Rad, TargetPos_Rad, TargetVel_Rad, TargetToq, float_dt );
 				Control.PDGravController( ActualPos_Rad, ActualVel_Rad, TargetPos_Rad, TargetVel_Rad, TargetToq);
@@ -419,16 +420,16 @@ void serial_task_proc(void *arg)
 			//write
 			if(NRMKkbhit())
 			{
-				//write(serial_fd, &kchr, 1);
+				write(serial_fd, &kchr, 1);
 			}
 
 			//read
-			//nbytes = read(serial_fd, &chr, 1);
+			nbytes = read(serial_fd, &chr, 1);
 			if(nbytes > 0)
 			{
-				if(kchr == 'a' && chr == 'f')
+				if(kchr == 'a' && chr == 'f' && MotionType == MOVE_JOB)
 					kchr = 'b';
-				else if(kchr == 'b' && chr == 'f')
+				else if(kchr == 'b' && chr == 'f'&& MotionType == MOVE_ZERO)
 					kchr = 'a';
 			}
 
@@ -449,75 +450,6 @@ void serial_task_proc(void *arg)
 		{
 			serial_worst_time = 0;
 			serial_time = 0;
-		}
-
-		p1 = p3;
-		p3 = rt_timer_read();
-	}
-}
-
-float float_dt_dmouse=0;
-unsigned long dmouse_time=0;
-unsigned long dmouse_worst_time=0;
-unsigned long dmouse_fault_count=0;
-
-void devmouse_task_proc(void *arg)
-{
-
-	dMouse.Activate();
-
-	int fd  = dMouse.getMousefd();;
-	struct input_event ie = dMouse.getInputEvent();;
-	struct mouse_t mouse = dMouse.getMouse();;
-	struct fb_t fb = dMouse.getMousefb();
-
-	ssize_t nread;
-
-	RTIME now, previous;
-	RTIME p1 = 0;
-	RTIME p3 = 0;
-
-	unsigned int devmouse_cycle_ns = 100e6;
-	rt_task_set_periodic(NULL, TM_NOW, devmouse_cycle_ns);
-	for(;;)
-	{
-		rt_task_wait_period(NULL);
-		previous = rt_timer_read();
-
-		if(system_ready)
-		{
-
-			if ( (nread = read(fd, &ie, sizeof(struct input_event))) > 0)
-			{
-				dMouse.print_event();
-				dMouse.print_mouse_state();
-				dMouse.fb_draw(&fb, &mouse.current, CURSOR_COLOR);
-
-				/*
-				if (event_handler[ie.type] == EV_REL)
-					cursor(&ie, &mouse);
-				elseif(event_handler[ie.type] == EV_KEY)
-					button(&ie, &mouse);
-				*/
-			}
-
-			now = rt_timer_read();
-			float_dt_dmouse = ((float)(long)(p3 - p1))*1e-3; 		// us
-			dmouse_time = (long) now - previous;
-
-			if ( dmouse_worst_time<dmouse_time )
-				dmouse_worst_time=dmouse_time;
-
-			if( dmouse_time > (unsigned long)devmouse_cycle_ns )
-			{
-				dmouse_fault_count++;
-				dmouse_worst_time=0;
-			}
-		}
-		else
-		{
-			dmouse_worst_time = 0;
-			dmouse_time = 0;
 		}
 
 		p1 = p3;
@@ -562,11 +494,6 @@ void print_run(void *arg)
 #if defined(_RS232_ON_)
 			rt_printf("# RS232 actTask_dt= %lius, desTask_dt=%0.1fus, Worst_dt= %lius, Fault=%d\n",
 					serial_time/1000, float_dt_serial, serial_worst_time/1000, serial_fault_count);
-#endif
-
-#if defined(_DEV_MOUSE_ON_)
-			rt_printf("# dMouse actTask_dt= %lius, desTask_dt=%0.1fus, Worst_dt= %lius, Fault=%d\n",
-					dmouse_time/1000, float_dt_dmouse, dmouse_worst_time/1000, dmouse_fault_count);
 #endif
 
 			for(int j=0; j<ELMO_TOTAL; ++j)
@@ -650,34 +577,6 @@ void print_run(void *arg)
 	}
 }
 
-void plot_run(void *arg)
-{
-	ssize_t len;
-	void *msg;
-	LOGGING_PACK logBuff;
-	memset(&logBuff, 0, sizeof(LOGGING_PACK));
-
-	int err = rt_queue_bind(&msg_plot, "PLOT_QUEUE", TM_INFINITE);
-	if(err)
-	{
-		fprintf(stderr, "Failed to queue bind, code %d\n", err);
-	}
-
-	rt_task_set_periodic(NULL, TM_NOW, 1e7);
-
-	while (1)
-	{
-		rt_task_wait_period(NULL);
-
-		if ( (len = rt_queue_receive(&msg_plot, &msg, TM_INFINITE)) > 0 )
-		{
-			memcpy(&logBuff, msg, sizeof(LOGGING_PACK));
-
-			rt_queue_free(&msg_plot, msg);
-		}
-	}
-}
-
 void tcpip_run(void *arg)
 {
 
@@ -694,22 +593,6 @@ void tcpip_run(void *arg)
 static void signal_handler(int signum)
 {
 	rt_printf("\n-- Signal Interrupt: %d", signum);
-
-	rt_printf("\n-- ConsolPrint RTTask Closing....");
-	rt_task_delete(&print_task);
-	rt_printf("\n-- ConsolPrint RTTask Closing Success....");
-
-#if defined(_DEV_MOUSE_ON_)
-	rt_printf("\n-- devMouse RTTask Closing....");
-	rt_task_delete(&devmouse_task);
-	dMouse.Deactivate();
-#endif
-
-#if defined(_PLOT_ON_)
-	rt_queue_unbind(&msg_plot);
-	rt_printf("\n-- Plotting RTTask Closing....");
-	rt_task_delete(&plot_task);
-#endif
 
 #if defined(_TCP_ON_)
 	rt_printf("\n-- TCPIP RTTask Closing....");
@@ -759,6 +642,10 @@ static void signal_handler(int signum)
 	ecatmaster.deactivate();
 #endif
 
+	rt_printf("\n-- ConsolPrint RTTask Closing....");
+	rt_task_delete(&print_task);
+	rt_printf("\n-- ConsolPrint RTTask Closing Success....");
+
 	rt_printf("\n\n\t !!RT Arm Client System Stopped!! \n");
 	exit(signum);
 }
@@ -784,8 +671,8 @@ int main(int argc, char **argv)
 	// TO DO: Specify the cycle period (cycle_ns) here, or use default value
 	//cycle_ns = 200000; // nanosecond -> 5kHz
 	//cycle_ns = 250000; // nanosecond -> 4kHz
-	//cycle_ns = 500000; // nanosecond -> 2kHz
-	cycle_ns = 750000; // nanosecond ->
+	cycle_ns = 500000; // nanosecond -> 2kHz
+	//cycle_ns = 800000; // nanosecond -> 1250Hz
 	//cycle_ns = 1000000; // nanosecond -> 1kHz
 	//cycle_ns = 1250000; // nanosecond -> 800Hz
 	period = ((double) cycle_ns)/((double) NSEC_PER_SEC);	//period in second unit
@@ -807,12 +694,6 @@ int main(int argc, char **argv)
 
 #if defined(_ECAT_ON_)
 
-	if(ecatmaster.GetConnectedSlaves() < ELMO_TOTAL)
-	{
-		rt_printf("\nError: Check Ethercat slave connection!\n");
-		//return 1;
-	}
-
 	for(int SlaveNum=0; SlaveNum < ELMO_TOTAL; SlaveNum++)
 	{
 		ecat_elmo[SlaveNum].setHomingParam(hominginfo[SlaveNum].HomingOffset, hominginfo[SlaveNum].HomingMethod,
@@ -831,14 +712,6 @@ int main(int argc, char **argv)
 	// RTArm_task: create and start
 	rt_printf("\n-- Now running rt task ...\n");
 
-
-#if defined(_PLOT_ON_)
-	rt_queue_create(&msg_plot, "PLOT_QUEUE", sizeof(LOGGING_PACK)*20, 20, Q_FIFO|Q_SHARED);
-
-	rt_task_create(&plot_task, "PLOT_PROC_Task", 0, 80, T_FPU);
-	rt_task_start(&plot_task, &plot_run, NULL);
-#endif
-
 #if defined(_ECAT_ON_)
 	rt_task_create(&RTArm_task, "CONTROL_PROC_Task", 1024*1024*4, 99, T_FPU); // MUST SET at least 4MB stack-size (MAXIMUM Stack-size ; 8192 kbytes)
 	rt_task_start(&RTArm_task, &RTRArm_run, NULL);
@@ -852,10 +725,6 @@ int main(int argc, char **argv)
 	rt_task_create(&print_task, "CONSOLE_PROC_Task", 0, 60, T_FPU);
 	rt_task_start(&print_task, &print_run, NULL);
 
-#if defined(_DEV_MOUSE_ON_)
-	rt_task_create(&devmouse_task, "DEVMOUSE_PROC_TASK", 0, 70, 0);
-	rt_task_start(&devmouse_task, &devmouse_task_proc, NULL);
-#endif
 
 #if defined(_TCP_ON_)
 	rt_task_create(&tcpip_task, "TCPIP_PROC_Task", 0, 80, T_FPU);
