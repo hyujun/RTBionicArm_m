@@ -259,8 +259,8 @@ void RTRArm_run(void *arg)
 
 			if(HomingFlag == 0)
 			{
-				//isElmoHoming();
-				//mingFlag = 1;
+				isElmoHoming();
+				//HomingFlag = 1;
 			}
 			else
 			{
@@ -276,7 +276,7 @@ void RTRArm_run(void *arg)
 						ActualVel_Rad, double_gt,
 						JointState, ControlMotion );
 
-				//Control.PDController( ActualPos_Rad, ActualVel_Rad, TargetPos_Rad, TargetVel_Rad, TargetToq, float_dt );
+
 				Control.PDGravController( ActualPos_Rad, ActualVel_Rad, TargetPos_Rad, TargetVel_Rad, TargetToq);
 
 				BionicArm.VelocityInvConvert(TargetVel, TargetVel_Rad);
@@ -290,11 +290,11 @@ void RTRArm_run(void *arg)
 					{
 						if(j >= 4)
 						{
-							ecat_elmo[j].writeVelocity(0);
+							ecat_elmo[j].writeVelocity(TargetVel[j]);
 						}
 						else
 						{
-							//ecat_elmo[j].writeTorque(TargetTor[j]);
+							ecat_elmo[j].writeTorque(TargetTor[j]);
 						}
 
 					}
@@ -427,9 +427,9 @@ void serial_task_proc(void *arg)
 			nbytes = read(serial_fd, &chr, 1);
 			if(nbytes > 0)
 			{
-				if(kchr == 'a' && chr == 'f' && MotionType == MOVE_JOB)
+				if(kchr == 'a' && chr == 'f' /*&& MotionType == MOVE_JOB*/)
 					kchr = 'b';
-				else if(kchr == 'b' && chr == 'f'&& MotionType == MOVE_ZERO)
+				else if(kchr == 'b' && chr == 'f' /*&& MotionType == MOVE_ZERO*/)
 					kchr = 'a';
 			}
 
@@ -462,7 +462,7 @@ void print_run(void *arg)
 	long stick=0;
 	unsigned int reset_count=0;
 	int count=0;
-
+	char faultcheck[] = "Fault";
 	rt_printf("\nPlease WAIT at least %i (s) until the system getting ready...\n", WAKEUP_TIME);
 	
 	/* Arguments: &task (NULL=self),
@@ -562,7 +562,8 @@ void print_run(void *arg)
 					{
 						rt_printf("\nID: %d , SlaveState: 0x%02X, SlaveConnection: %s, SlaveNMT: %s ", i,
 								ecatmaster.GetSlaveState(i), ecatmaster.GetSlaveConnected(i).c_str(), ecatmaster.GetSlaveNMT(i).c_str());
-
+						if(strcmp(faultcheck, ecat_elmo[i].GetDevState().c_str()) == 0)
+							exit(EXIT_SUCCESS);
 						rt_printf(" SlaveStatus : %s,", ecat_elmo[i].GetDevState().c_str());
 						rt_printf(" StatWord: 0x%04X, ", ecat_elmo[i].status_word_);
 

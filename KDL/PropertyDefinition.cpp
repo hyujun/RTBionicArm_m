@@ -10,7 +10,7 @@
 #define HARMONIC_100 100
 #define GEAR_ELBOW 26*2
 #define GEAR_PS 53
-#define GEAR_WRIST 150
+#define GEAR_WRIST 180
 
 #define ABS_ENC_19 524288
 #define ABS_ENC_18 262144
@@ -106,10 +106,11 @@ FrictionTanh frictiontanh[] = {
 
 
 homing_info hominginfo[] = {
-		{-4369066, 	-2, ABS_ENC_18*4, 900}, //offset (int32_t)round((45.0/360.0)*ABS_ENC_18*HARMONIC_100)
-		{-8956586, 	-2, ABS_ENC_18*4, 900}, //offset (int32_t)round((113.0/360.0)*ABS_ENC_18*HARMONIC_100)
-		{2184533, 	-1, ABS_ENC_18*4, 900}, //offset -(int32_t)round((30.0/360.0)*ABS_ENC_18*HARMONIC_100)
+		//{-4369066, 	-2, ABS_ENC_18*4, 900}, //offset (int32_t)round((45.0/360.0)*ABS_ENC_18*HARMONIC_100)
+		{-13107200,	-2, ABS_ENC_18*6, 900}, //offset (int32_t)round((180.0/360.0)*ABS_ENC_18*HARMONIC_100)
+		{8956586, 	-1, ABS_ENC_18*6, 900}, //offset (int32_t)round((113.0/360.0)*ABS_ENC_18*HARMONIC_100)
+		{-2184533, 	-2, ABS_ENC_18*6, 900}, //offset -(int32_t)round((30.0/360.0)*ABS_ENC_18*HARMONIC_100)
 		{0, 		-1, INC_ENC_10*2, 900},
-		{153600,	-1, INC_ENC_10*4, 400}, //offset (int32_t)round((90.0/360.0)*INC_ENC_10*GEAR_WRIST)
+		{184320,	-1, INC_ENC_10*4, 700}, //offset (int32_t)round((90.0/360.0)*INC_ENC_10*GEAR_WRIST)
 		{54272,		-1, INC_ENC_10*4, 300}, //offset (int32_t)round((90.0/360.0)*INC_ENC_10*GEAR_PS)
 };
